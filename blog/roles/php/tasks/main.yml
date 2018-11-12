@@ -1,0 +1,6 @@
+---
+- name: Install php extensions
+  apt:
+    name: ['php7.1-gd', 'php7.1-ssh2']
+    state: present
+  sudo: yes

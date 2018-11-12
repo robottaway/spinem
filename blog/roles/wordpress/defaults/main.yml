@@ -1,0 +1,3 @@
+---
+# defaults file for wordpress
+wp_ssl_cert: should be encrypted in vault as group var

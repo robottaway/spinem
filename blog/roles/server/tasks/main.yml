@@ -1,0 +1,21 @@
+---
+- name: setup hostname
+  hostname:
+    name: yknowdevops
+  sudo: yes
+
+- name: install php ppa
+  apt_repository:
+    repo: 'ppa:ondrej/php'
+    update_cache: yes
+  sudo: yes
+
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+  sudo: yes
+
+- name: Install required software
+  apt: 
+    name: ['apache2', 'mysql-server', 'php7.1-mysql', 'php7.1', 'libapache2-mod-php7.1', 'php7.1-mcrypt', 'python-mysqldb']
+    state: present
+  sudo: yes

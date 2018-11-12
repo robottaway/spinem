@@ -1,0 +1,122 @@
+---
+- name: Download WordPress
+  get_url: 
+    url=https://wordpress.org/latest.tar.gz 
+    dest=/tmp/wordpress.tar.gz
+    validate_certs=no 
+  sudo: yes
+
+- name: Extract WordPress
+  unarchive: src=/tmp/wordpress.tar.gz dest=/var/www/ copy=no 
+  sudo: yes
+
+- name: copy wordpress apache config
+  copy:
+    src: 000-default.conf
+    dest: /etc/apache2/sites-available/000-default.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - restart apache
+  sudo: yes
+
+- name: copy wordpress ssl apache config
+  copy:
+    src: 000-default-le-ssl.conf
+    dest: /etc/apache2/sites-available/000-default-le-ssl.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - restart apache
+  sudo: yes
+
+- name: copy over wordpress ssl cert
+  copy:
+    content: "{{ wp_ssl_cert }}"
+    dest: /etc/letsencrypt/live/www.yknowdevopsnstuff.com/privkey.pem
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - restart apache
+  sudo: yes
+
+- name: copy cert chain over
+  copy:
+    src: fullchain.pem
+    dest: /etc/letsencrypt/live/www.yknowdevopsnstuff.com/fullchain.pem
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - restart apache
+  sudo: yes
+
+- name: copy letsencrypt apache options file
+  copy:
+    src: options-ssl-apache.conf
+    dest: /etc/letsencrypt/options-ssl-apache.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - restart apache
+
+- name: update WordPress configuration
+  template:
+    src: wp-config.php.j2
+    dest: /var/www/wordpress/wp-config.php
+    mode: 0600
+    owner: www-data
+    group: nogroup
+  sudo: yes
+
+# - name: Update default Apache site
+#   sudo: yes
+#   lineinfile: 
+#     dest=/etc/apache2/sites-enabled/000-default.conf 
+#     regexp="(.)+DocumentRoot /var/www/html"
+#     line="DocumentRoot /var/www/wordpress"
+#   notify:
+#     - restart apache
+#   sudo: yes
+# - name: Copy sample config file
+#   command: mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php creates=/var/www/wordpress/wp-config.php
+#   sudo: yes
+# 
+# - name: Update WordPress config file
+#   lineinfile:
+#     dest=/var/www/wordpress/wp-config.php
+#     regexp="{{ item.regexp }}"
+#     line="{{ item.line }}"
+#   with_items:
+#     - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', '{{wp_mysql_db}}');"}        
+#     - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', '{{wp_mysql_user}}');"}        
+#     - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', '{{wp_mysql_password}}');"}
+#   sudo: yes
+# - name: Update default Apache site
+#   sudo: yes
+#   lineinfile: 
+#     dest=/etc/apache2/sites-enabled/000-default.conf 
+#     regexp="(.)+DocumentRoot /var/www/html"
+#     line="DocumentRoot /var/www/wordpress"
+#   notify:
+#     - restart apache
+#   sudo: yes
+# 
+# - name: Copy sample config file
+#   command: mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php creates=/var/www/wordpress/wp-config.php
+#   sudo: yes
+# 
+# - name: Update WordPress config file
+#   lineinfile:
+#     dest=/var/www/wordpress/wp-config.php
+#     regexp="{{ item.regexp }}"
+#     line="{{ item.line }}"
+#   with_items:
+#     - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', '{{wp_mysql_db}}');"}        
+#     - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', '{{wp_mysql_user}}');"}        
+#     - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', '{{wp_mysql_password}}');"}
+#   sudo: yes
